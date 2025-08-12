@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Bill - Bill Reminder App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Edit Bill: {{ bill.name }}
+                </h4>
+            </div>
+            
+            <form method="POST" id="editBillForm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-receipt me-1"></i>
+                            Bill Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               name="name" 
+                               value="{{ bill.name }}"
+                               placeholder="e.g., Electricity Bill, Rent, Credit Card"
+                               required>
+                        <div class="form-text">Give your bill a recognizable name.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>
+                            Description
+                        </label>
+                        <textarea class="form-control" 
+                                  id="description" 
+                                  name="description" 
+                                  rows="3"
+                                  placeholder="Additional details about this bill (optional)">{{ bill.description or '' }}</textarea>
+                        <div class="form-text">Add any additional notes or details.</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="due_date" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>
+                                Due Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="due_date" 
+                                   name="due_date" 
+                                   value="{{ bill.due_date.strftime('%Y-%m-%d') }}"
+                                   required>
+                            <div class="form-text">When is this bill due?</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="amount" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>
+                                Amount
+                            </label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="amount" 
+                                   name="amount" 
+                                   value="{{ bill.amount or '' }}"
+                                   step="0.01" 
+                                   min="0"
+                                   placeholder="0.00">
+                            <div class="form-text">Bill amount (optional).</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Current Status
+                                    </h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <span class="badge bg-{{ bill.status_class }} me-2">
+                                                {{ bill.status_text }}
+                                            </span>
+                                            {% if bill.is_paid %}
+                                                <small class="text-muted">Paid on {{ bill.updated_at.strftime('%b %d, %Y') }}</small>
+                                            {% else %}
+                                                <small class="text-muted">Created on {{ bill.created_at.strftime('%b %d, %Y') }}</small>
+                                            {% endif %}
+                                        </span>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if not bill.is_paid %}
+                                                <a href="{{ url_for('mark_paid', bill_id=bill.id) }}" 
+                                                   class="btn btn-success">
+                                                    <i class="fas fa-check me-1"></i>Mark Paid
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ url_for('mark_unpaid', bill_id=bill.id) }}" 
+                                                   class="btn btn-warning">
+                                                    <i class="fas fa-undo me-1"></i>Mark Unpaid
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-bell me-2"></i>
+                        <strong>Reminders:</strong> 
+                        {% if not bill.is_paid %}
+                            {% if bill.days_until_due <= 3 %}
+                                Active reminders are being sent for this bill.
+                            {% else %}
+                                Reminders will start {{ bill.days_until_due - 3 }} days from now.
+                            {% endif %}
+                        {% else %}
+                            No reminders will be sent for paid bills.
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light">
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Cancel
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="fas fa-save me-1"></i>
+                                Update Bill
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Danger Zone -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Danger Zone
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Permanently delete this bill. This action cannot be undone.
+                </p>
+                <a href="{{ url_for('delete_bill', bill_id=bill.id) }}" 
+                   class="btn btn-danger"
+                   onclick="return confirm('Are you sure you want to permanently delete this bill? This action cannot be undone.')">
+                    <i class="fas fa-trash me-1"></i>
+                    Delete Bill
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

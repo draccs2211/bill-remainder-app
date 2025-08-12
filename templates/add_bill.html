@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Add Bill - Bill Reminder App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Add New Bill
+                </h4>
+            </div>
+            
+            <form method="POST" id="addBillForm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-receipt me-1"></i>
+                            Bill Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               name="name" 
+                               value="{{ name or '' }}"
+                               placeholder="e.g., Electricity Bill, Rent, Credit Card"
+                               required>
+                        <div class="form-text">Give your bill a recognizable name.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>
+                            Description
+                        </label>
+                        <textarea class="form-control" 
+                                  id="description" 
+                                  name="description" 
+                                  rows="3"
+                                  placeholder="Additional details about this bill (optional)">{{ description or '' }}</textarea>
+                        <div class="form-text">Add any additional notes or details.</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="due_date" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>
+                                Due Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="due_date" 
+                                   name="due_date" 
+                                   value="{{ due_date or '' }}"
+                                   min="{{ today.strftime('%Y-%m-%d') }}"
+                                   required>
+                            <div class="form-text">When is this bill due?</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="amount" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>
+                                Amount
+                            </label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="amount" 
+                                   name="amount" 
+                                   value="{{ amount or '' }}"
+                                   step="0.01" 
+                                   min="0"
+                                   placeholder="0.00">
+                            <div class="form-text">Bill amount (optional).</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Reminder Setup:</strong> You'll receive notifications via email and SMS starting 3 days before the due date until the bill is marked as paid.
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light">
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Cancel
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-save me-1"></i>
+                                Add Bill
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Card -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-secondary" id="previewCard" style="display: none;">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-eye me-2"></i>
+                    Preview
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1" id="previewName">-</h6>
+                        <p class="text-muted mb-1" id="previewDescription">-</p>
+                        <small class="text-muted">Due: <span id="previewDueDate">-</span></small>
+                    </div>
+                    <div class="text-end">
+                        <h6 class="mb-0" id="previewAmount">-</h6>
+                        <span class="badge bg-warning" id="previewStatus">Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
